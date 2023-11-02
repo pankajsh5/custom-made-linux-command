@@ -1,0 +1,109 @@
+.TH INTERNSCTL 1 "2 November 2023" "v0.1.0" "internsctl manual"
+
+.SH NAME
+internsctl - Custom Linux command for my first custom command
+
+.SH SYNOPSIS
+.B internsctl
+[ \--help | \--version ]
+[ \-options ]
+[ \-options FILENAME ]
+[ command [ command-options ] ]
+
+.SH DESCRIPTION
+.B internsctl
+is a custom Linux command that provides various operations, including getting CPU information, memory information, file information, creating users, and listing users with or without sudo permissions.
+
+.SH OPTIONS
+.TP
+\fB\-h, \-\-help\fR
+Display help message and usage information.
+
+.TP
+\fB\-v, \-\-version\fR
+Display version information.
+
+.TP
+\fBcpu getinfo\fR
+Get CPU information.
+
+.TP
+\fBmemory getinfo\fR
+Get Memory information.
+
+.TP
+\fBfile getinfo [options] <filename>\fR
+Get information about a file.
+
+.TP
+\fBuser create <username>\fR
+Create a new user.
+
+.TP
+\fBuser list [ \-\-sudo\-only ]\fR
+List all regular users or users with sudo permissions.
+
+.SH FILE GETINFO OPTIONS
+.TP
+\fB\-a, \-\-permissions\fR
+Print file permissions.
+
+.TP
+\fB\-s, \-\-size\fR
+Print file size.
+
+.TP
+\fB\-o, \-\-owner\fR
+Print file owner.
+
+.TP
+\fB\-m, \-\-last\-modified\fR
+Print the last modification date.
+
+.SH EXAMPLES
+Display CPU information:
+.PP
+.B internsctl cpu getinfo
+
+Display memory information:
+.PP
+.B internsctl memory getinfo
+
+Display file information, including permissions and size:
+.PP
+.B internsctl file getinfo \-a \-s /path/to/file.txt
+
+Create a new user:
+.PP
+.B internsctl user create newuser
+
+List all regular users:
+.PP
+.B internsctl user list
+
+List users with sudo permissions:
+.PP
+.B internsctl user list \-\-sudo\-only
+
+.SH AUTHOR
+This manual page was written by Pankaj Kumar Sharma "psharma05072000@gmail.com"  .
+
+.SH SEE ALSO
+lscpu(1), free(1), useradd(8), passwd(1)
+
+.SH BUGS
+Report bugs to "psharma05072000@gmail.com" .
+
+.SH COPYRIGHT
+This is a free and open-source software.
+
+.SH VERSION
+internsctl v0.1.0
+
+.SH NOTES
+This manual page is for demonstration purposes and should be customized for your specific needs.
+
+.SH DISCLAIMER
+This manual page is provided "as is" and without any warranty.
+
+
