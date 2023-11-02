@@ -1,0 +1,191 @@
+#!/bin/bash
+
+# Version information
+VERSION="v0.1.0"
+
+# Help message function
+function show_help {
+    echo "Usage: internsctl [options]"
+    echo "Custom Linux command for various operations."
+    echo "Options:"
+    echo "  cpu getinfo               Get CPU information"
+    echo "  memory getinfo            Get Memory information"
+    echo "  file getinfo [options] <file-name>  Get information about a file"
+    echo "  user create <username>    Create a new user"
+    echo "  user list                List all regular users"
+    echo "  user list --sudo-only    List users with sudo permissions"
+    echo "  -h, --help               Show this help message"
+    echo "  -v, --version            Show version information"
+}
+
+# Function to get CPU information
+function get_cpu_info {
+    lscpu
+}
+
+# Function to get Memory information
+function get_memory_info {
+    free -h
+}
+
+# Function to create a new user
+function create_user {
+    if [ -z "$1" ]; then
+        echo "Error: Username not provided. Usage: internsctl user create <username>"
+    else
+        username="$1"
+        sudo useradd -m "$username"
+        echo "User $username created."
+    fi
+}
+
+# Function to list all regular users
+function list_users {
+    cut -d: -f1 /etc/passwd
+}
+
+# Function to list users with sudo permissions
+function list_sudo_users {
+    grep -Po '^sudo:\K.*$' /etc/group | tr ',' '\n'
+}
+
+# Function to get file information
+function get_file_info {
+    local print_access=true
+    local print_size=true
+    local print_owner=true
+    local print_last_modified=true
+
+    # Loop through the arguments and process flags
+    while [[ "$#" -gt 0 ]]; do
+        case "$1" in
+            -a|--permissions)
+                print_access=true
+                print_size=false
+                print_owner=false
+                print_last_modified=false
+                shift
+                ;;
+            -s|--size)
+                print_access=false
+                print_size=true
+                print_owner=false
+                print_last_modified=false
+                shift
+                ;;
+            -o|--owner)
+                print_access=false
+                print_size=false
+                print_owner=true
+                print_last_modified=false
+                shift
+                ;;
+            -m|--last-modified)
+                print_access=false
+                print_size=false
+                print_owner=false
+                print_last_modified=true
+                shift
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+
+    # Check if a filename is provided
+    if [ -z "$1" ]; then
+        echo "Error: File name not provided. Usage: internsctl file getinfo [options] <file-name>"
+    else
+        filename="$1"
+        if [ -f "$filename" ]; then
+
+            if $print_access && $print_size && $print_owner && $print_last_modified; then 
+                output="File: $filename"
+            fi
+
+            if $print_access; then
+                access=$(stat -c %A "$filename")
+                output="$output\nAccess: $access"
+            fi
+
+            if $print_size; then
+                size=$(stat -c %s "$filename")
+                output="$output\nSize: $size"
+            fi
+
+            if $print_owner; then
+                owner=$(stat -c %U "$filename")
+                output="$output\nOwner: $owner"
+            fi
+
+            if $print_last_modified; then
+                last_modified=$(stat -c "%y" "$filename")
+                output="$output\nModify: $last_modified"
+            fi
+
+            echo -e "$output"
+        else
+            echo "File '$filename' not found."
+        fi
+    fi
+}
+
+# Main function
+function main {
+    case "$1" in
+        cpu)
+            get_cpu_info
+            ;;
+        memory)
+            get_memory_info
+            ;;
+        file)
+            shift
+            case "$1" in
+                getinfo)
+                    shift
+                    get_file_info "$@"
+                    ;;
+                *)
+                    echo "Invalid file option. Use 'internsctl file --help' for usage information."
+                    ;;
+            esac
+            ;;
+        user)
+            case "$2" in
+                create)
+                    create_user "$3"
+                    ;;
+                list)
+                    if [ "$3" == "--sudo-only" ]; then
+                        list_sudo_users
+                    else
+                        list_users
+                    fi
+                    ;;
+                *)
+                    echo "Invalid user option. Use 'internsctl user --help' for usage information."
+                    ;;
+            esac
+            ;;
+        -h | --help)
+            show_help
+            ;;
+        -v | --version)
+            echo "internsctl $VERSION"
+            ;;
+        *)
+            echo "Invalid option. Use 'internsctl --help' for usage information."
+            ;;
+    esac
+}
+
+# Check if any arguments are provided
+if [ "$#" -eq 0 ]; then
+    echo "Error: No arguments provided. Use 'internsctl --help' for usage information."
+    exit 1
+fi
+
+# Call the main function with the provided arguments
+main "$@"
